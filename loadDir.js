@@ -2,12 +2,26 @@ const fs = require('fs');
 const util = require('util');
 const readdir = util.promisify(fs.readdir);
 const path = require('path');
-const XLSX     = require('xlsx');
+const XLSX = require('xlsx');
+const {createObjectCsvWriter} = require('csv-writer');
+const csvfilepath = `${__dirname}/result.csv`;
+const csvWriter = createObjectCsvWriter({
+  path: csvfilepath,
+  header: [
+    {id: 'file', title: 'File Name'},      //Headerつける場合
+    {id: 'sheet', title: 'Sheet Name'},　 //Headerつける場合
+    {id: 'cell', title: 'Cell Name'}
+    //'file','sheet','cell' //Headerなしの場合
+  ],
+  encoding:'utf8',
+  append :false, // append : no header if true
+});
 
-const TARGET = 'C:\\Udemy';
+const TARGET = 'C:\\Users\\hhattori6\\git\\mr-grep\\test';
 const excels = [];
 
 const resultMap = new Map();
+const resultArray = [];
 
 /**
  * 引数がExcelファイルか判定します。
@@ -91,17 +105,23 @@ const searchWordInExcel = async() => {
         if(typeof value === 'string') {
           continue;
         }
-        if(Object.values(value).includes('あやぼう')) {
+        if(Object.values(value).includes('プロパティ')) {
           const result = {
+            file: file,
             sheet: sheet,
             cell: cell
           };
-          console.log(file, cell, sheet);
-          resultMap.set(file, result);
+          resultArray.push(result);
         }
       }
     }
+    resultMap.set(file, resultArray);
   }
+}
+
+const fileOutput = async() => {
+  await csvWriter.writeRecords(resultArray);
+  console.log('finished');
 }
 
 /**
@@ -109,10 +129,11 @@ const searchWordInExcel = async() => {
  */
 const Main = async () => {
   await searchExcel(TARGET);
-  console.log(excels);
+
   // Excel内で検索文字列を検索
   await searchWordInExcel();
-  console.log(resultMap);
+  await fileOutput();
+  console.log('mainプログラム終了');
 };
 
 Main();

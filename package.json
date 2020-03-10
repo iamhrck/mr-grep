@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {},
   "dependencies": {
+    "csv-writer": "^1.6.0",
     "xlsx": "^0.15.5"
   },
   "devDependencies": {}
